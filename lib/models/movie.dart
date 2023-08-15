@@ -9,6 +9,7 @@ class Movies {
   String posterPath;
   String releaseDate;
   double voteAverage;
+  bool isFavorite;
 
   Movies({
     required this.title,
@@ -21,6 +22,7 @@ class Movies {
     required this.posterPath,
     required this.releaseDate,
     required this.voteAverage,
+    required this.isFavorite,
   });
 
   factory Movies.fromJson(Map<String, dynamic> json) {
@@ -36,6 +38,7 @@ class Movies {
       releaseDate: json['release_date'],
       voteAverage:
           json['vote_average'].toDouble(), // Convert vote_average to Double
+      isFavorite: false,
     );
   }
 }
