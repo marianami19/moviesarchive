@@ -15,7 +15,7 @@ class MyApp extends StatelessWidget {
     return MaterialApp(
       title: 'Movie Archive',
       theme: ThemeData.dark().copyWith(
-        scaffoldBackgroundColor: Colors.tealAccent,
+        scaffoldBackgroundColor: Color.fromARGB(107, 27, 54, 48),
         useMaterial3: true,
       ),
       home: HomeScreen(),

@@ -9,19 +9,29 @@ class HomeScreen extends StatefulWidget {
 }
 
 class _HomePageState extends State<HomeScreen> {
-  late Future<List<Movies>> topRatedMovies;
+  List<Movies> topRatedMovies = [];
   List<Movies> favoriteMovies = [];
   late PageController _pageController;
+  int _currentIndex = 0;
+  int _currentPage = 1;
+  int _pageSize = 5;
 
   @override
   void initState() {
     super.initState();
     _pageController = PageController(initialPage: _currentIndex);
-    topRatedMovies = TopRated().getTopRatedMovies();
-    loadFavoriteMoviesFromPrefs(); // Load favorite movies from SharedPreferences
+    loadTopRatedMovies();
+    loadFavoriteMoviesFromPrefs();
   }
 
-  @override
+  Future<void> loadTopRatedMovies() async {
+    List<Movies> newMovies =
+        await TopRated().getTopRatedMovies(page: _currentPage);
+    setState(() {
+      topRatedMovies.addAll(newMovies);
+    });
+  }
+
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
@@ -52,7 +62,53 @@ class _HomePageState extends State<HomeScreen> {
     );
   }
 
-  int _currentIndex = 0;
+  Widget buildTopRatedMoviesPage() {
+    return LazyLoadListView(
+      items: topRatedMovies,
+      itemBuilder: (context, index, movie) {
+        return ListTile(
+          title: Text(movie.title),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text('Year: ${extractYearFromDate(movie.releaseDate)}'),
+              Text('IMDB Rating: ${movie.voteAverage}'),
+              Text(movie.releaseDate),
+            ],
+          ),
+          leading: Image.network(
+            'https://image.tmdb.org/t/p/w200${movie.posterPath}',
+          ),
+          trailing: IconButton(
+            icon: Icon(Icons.favorite),
+            color: favoriteMovies.contains(movie) ? Colors.red : Colors.grey,
+            onPressed: () {
+              toggleFavorite(movie);
+            },
+          ),
+        );
+      },
+      onLoadMore: _loadMoreTopRatedMovies,
+    );
+  }
+
+// Helper function to extract year from a date string (YYYY-MM-DD)
+  String extractYearFromDate(String dateString) {
+    if (dateString.length >= 4) {
+      return dateString.substring(0, 4);
+    } else {
+      return '';
+    }
+  }
+
+  Future<void> _loadMoreTopRatedMovies() async {
+    List<Movies> moreMovies =
+        await TopRated().getTopRatedMovies(page: _currentPage + 1);
+    setState(() {
+      topRatedMovies.addAll(moreMovies);
+      _currentPage++;
+    });
+  }
 
   void _onTabTapped(int index) {
     setState(() {
@@ -69,44 +125,6 @@ class _HomePageState extends State<HomeScreen> {
     setState(() {
       _currentIndex = index;
     });
-  }
-
-  // Method to build the top-rated movies page
-  Widget buildTopRatedMoviesPage() {
-    return FutureBuilder<List<Movies>>(
-      future: topRatedMovies,
-      builder: (context, snapshot) {
-        if (snapshot.connectionState == ConnectionState.waiting) {
-          return Center(child: CircularProgressIndicator());
-        } else if (snapshot.hasError) {
-          return Center(child: Text('Error loading movies'));
-        } else if (!snapshot.hasData || snapshot.data!.isEmpty) {
-          return Center(child: Text('No movies available'));
-        } else {
-          return ListView.builder(
-            itemCount: snapshot.data!.length,
-            itemBuilder: (context, index) {
-              Movies movie = snapshot.data![index];
-              return ListTile(
-                title: Text(movie.title),
-                subtitle: Text(movie.releaseDate),
-                leading: Image.network(
-                  'https://image.tmdb.org/t/p/w200${movie.posterPath}',
-                ),
-                trailing: IconButton(
-                  icon: Icon(Icons.favorite),
-                  color:
-                      favoriteMovies.contains(movie) ? Colors.red : Colors.grey,
-                  onPressed: () {
-                    toggleFavorite(movie);
-                  },
-                ),
-              );
-            },
-          );
-        }
-      },
-    );
   }
 
   // Method to toggle the favorite status of a movie
@@ -174,6 +192,71 @@ class _HomePageState extends State<HomeScreen> {
             },
           ),
         );
+      },
+    );
+  }
+}
+
+class LazyLoadListView<T> extends StatefulWidget {
+  final List<T> items;
+  final Widget Function(BuildContext, int, T) itemBuilder;
+  final VoidCallback onLoadMore;
+
+  LazyLoadListView({
+    required this.items,
+    required this.itemBuilder,
+    required this.onLoadMore,
+  });
+
+  @override
+  _LazyLoadListViewState<T> createState() => _LazyLoadListViewState<T>();
+}
+
+class _LazyLoadListViewState<T> extends State<LazyLoadListView<T>> {
+  final ScrollController _scrollController = ScrollController();
+  bool _isLoading = false;
+
+  @override
+  void initState() {
+    super.initState();
+    _scrollController.addListener(_scrollListener);
+  }
+
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    super.dispose();
+  }
+
+  void _scrollListener() {
+    if (_scrollController.position.pixels ==
+        _scrollController.position.maxScrollExtent) {
+      if (!_isLoading) {
+        setState(() {
+          _isLoading = true;
+        });
+        widget.onLoadMore();
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return ListView.builder(
+      controller: _scrollController,
+      itemCount: widget.items.length + (_isLoading ? 1 : 0),
+      itemBuilder: (context, index) {
+        if (index < widget.items.length) {
+          return SizedBox(
+            height: 120, // Adjust the height as needed
+            child: widget.itemBuilder(context, index, widget.items[index]),
+          );
+        } else {
+          return Padding(
+            padding: EdgeInsets.symmetric(vertical: 16),
+            child: Center(child: CircularProgressIndicator()),
+          );
+        }
       },
     );
   }
