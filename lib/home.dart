@@ -67,25 +67,44 @@ class _HomePageState extends State<HomeScreen> {
       items: topRatedMovies,
       itemBuilder: (context, index, movie) {
         return ListTile(
-          title: Text(movie.title),
-          subtitle: Column(
+          contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+          title: Row(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text('Year: ${extractYearFromDate(movie.releaseDate)}'),
-              Text('IMDB Rating: ${movie.voteAverage}'),
-              Text(movie.releaseDate),
+              Container(
+                width: 100,
+                height: 150,
+                child: Image.network(
+                  'https://image.tmdb.org/t/p/w200${movie.posterPath}',
+                  fit: BoxFit.cover,
+                ),
+              ),
+              SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(movie.title,
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold)),
+                    Text('Year: ${extractYearFromDate(movie.releaseDate)}'),
+                    Text('IMDB Rating: ${movie.voteAverage}'),
+                  ],
+                ),
+              ),
+              IconButton(
+                icon: Icon(Icons.favorite),
+                color:
+                    favoriteMovies.contains(movie) ? Colors.red : Colors.grey,
+                onPressed: () {
+                  toggleFavorite(movie);
+                },
+              ),
             ],
           ),
-          leading: Image.network(
-            'https://image.tmdb.org/t/p/w200${movie.posterPath}',
-          ),
-          trailing: IconButton(
-            icon: Icon(Icons.favorite),
-            color: favoriteMovies.contains(movie) ? Colors.red : Colors.grey,
-            onPressed: () {
-              toggleFavorite(movie);
-            },
-          ),
+          onTap: () {
+            // Add your logic for handling tap on the movie tile
+          },
         );
       },
       onLoadMore: _loadMoreTopRatedMovies,
@@ -179,18 +198,44 @@ class _HomePageState extends State<HomeScreen> {
       itemBuilder: (context, index) {
         Movies movie = favoriteMovies[index];
         return ListTile(
-          title: Text(movie.title),
-          subtitle: Text(movie.releaseDate),
-          leading: Image.network(
-            'https://image.tmdb.org/t/p/w200${movie.posterPath}',
+          contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+          title: Row(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Container(
+                width: 100,
+                height: 120,
+                child: Image.network(
+                  'https://image.tmdb.org/t/p/w200${movie.posterPath}',
+                  fit: BoxFit.cover,
+                ),
+              ),
+              SizedBox(width: 16),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(movie.title,
+                        style: TextStyle(
+                            fontSize: 16, fontWeight: FontWeight.bold)),
+                    Text('Year: ${extractYearFromDate(movie.releaseDate)}'),
+                    Text('IMDB Rating: ${movie.voteAverage}'),
+                  ],
+                ),
+              ),
+              IconButton(
+                icon: Icon(Icons.favorite),
+                color:
+                    favoriteMovies.contains(movie) ? Colors.red : Colors.grey,
+                onPressed: () {
+                  toggleFavorite(movie);
+                },
+              ),
+            ],
           ),
-          trailing: IconButton(
-            icon: Icon(Icons.favorite),
-            color: Colors.red,
-            onPressed: () {
-              toggleFavorite(movie);
-            },
-          ),
+          onTap: () {
+            // Add your logic for handling tap on the movie tile
+          },
         );
       },
     );
