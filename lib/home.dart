@@ -1,4 +1,6 @@
 import 'package:flutter/material.dart';
+import 'package:moviearchive/constants.dart';
+import 'package:moviearchive/lazy_loading.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:moviearchive/api/toprated.dart';
 import 'package:moviearchive/models/movie.dart';
@@ -157,48 +159,44 @@ class _HomePageState extends State<HomeScreen> {
             items: filteredMovies,
             itemBuilder: (context, index, movie) {
               return ListTile(
-                contentPadding:
-                    EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-                title: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      width: 100,
-                      height: 150,
-                      child: Image.network(
-                        'https://image.tmdb.org/t/p/w200${movie.posterPath}',
-                        fit: BoxFit.cover,
+                  contentPadding:
+                      EdgeInsets.symmetric(vertical: 8, horizontal: 16),
+                  title: Row(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        width: 100,
+                        height: 150,
+                        child: Image.network(
+                          '${Constants.imgPath}${movie.posterPath}',
+                          fit: BoxFit.cover,
+                        ),
                       ),
-                    ),
-                    SizedBox(width: 16),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(movie.title,
-                              style: TextStyle(
-                                  fontSize: 16, fontWeight: FontWeight.bold)),
-                          Text(
-                              'Year: ${extractYearFromDate(movie.releaseDate)}'),
-                          Text('IMDB Rating: ${movie.voteAverage}'),
-                        ],
+                      SizedBox(width: 16),
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(movie.title,
+                                style: TextStyle(
+                                    fontSize: 16, fontWeight: FontWeight.bold)),
+                            Text(
+                                'Year: ${extractYearFromDate(movie.releaseDate)}'),
+                            Text('IMDB Rating: ${movie.voteAverage}'),
+                          ],
+                        ),
                       ),
-                    ),
-                    IconButton(
-                      icon: Icon(Icons.favorite),
-                      color: favoriteMovies.contains(movie)
-                          ? Colors.red
-                          : Colors.grey,
-                      onPressed: () {
-                        toggleFavorite(movie);
-                      },
-                    ),
-                  ],
-                ),
-                onTap: () {
-                  // Add your logic for handling tap on the movie tile
-                },
-              );
+                      IconButton(
+                        icon: Icon(Icons.favorite),
+                        color: favoriteMovies.contains(movie)
+                            ? Colors.red
+                            : Colors.grey,
+                        onPressed: () {
+                          toggleFavorite(movie);
+                        },
+                      ),
+                    ],
+                  ));
             },
             onLoadMore: _loadMoreTopRatedMovies,
           ),
@@ -206,175 +204,6 @@ class _HomePageState extends State<HomeScreen> {
       ],
     );
   }
-
-// Widget buildTopRatedMoviesPage() {
-//     List<Movies> filteredMovies = _searchController.text.isNotEmpty
-//         ? searchMovies(_searchController.text)
-//         : topRatedMovies;
-//   List<Movies> sortedMovies = sortMovies(filteredMovies);
-
-//   return Column(
-//     children: [
-//       Padding(
-//         padding: EdgeInsets.all(16),
-//         child: Row(
-//           mainAxisAlignment: MainAxisAlignment.spaceBetween,
-//           children: [
-//             DropdownButton<MovieSortOption>(
-//               value: _currentSortOption,
-//               onChanged: (newSortOption) {
-//                 setState(() {
-//                   _currentSortOption = newSortOption!;
-//                 });
-//               },
-//               items: MovieSortOption.values.map<DropdownMenuItem<MovieSortOption>>((option) {
-//                 return DropdownMenuItem<MovieSortOption>(
-//                   value: option,
-//                   child: Text(option.toString().split('.').last),
-//                 );
-//               }).toList(),
-//             ),
-//             Text('Sort by: ${_currentSortOption.toString().split('.').last}'),
-//           ],
-//         ),
-//       ),
-//       Expanded(
-//         child: LazyLoadListView(
-//           items: sortedMovies,
-//           itemBuilder: (context, index, movie) {
-//             // The rest of your movie item UI
-//             // ...
-//           },
-//           onLoadMore: _loadMoreTopRatedMovies,
-//         ),
-//       ),
-//     ],
-//   );
-// }
-
-//   Widget buildTopRatedMoviesPage() {
-//     List<Movies> filteredMovies = _searchController.text.isNotEmpty
-//         ? searchMovies(_searchController.text)
-//         : topRatedMovies;
-
-//     return Column(
-//       children: [
-//         Padding(
-//           padding: EdgeInsets.all(16),
-//           child: TextField(
-//             controller: _searchController,
-//             onChanged: (query) {
-//               setState(() {});
-//             },
-//             decoration: InputDecoration(
-//               hintText: 'Search movies by name',
-//               prefixIcon: Icon(Icons.search),
-//             ),
-//           ),
-//         ),
-//         Expanded(
-//           child: LazyLoadListView(
-//             items: filteredMovies,
-//             itemBuilder: (context, index, movie) {
-//               return ListTile(
-//                 contentPadding:
-//                     EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-//                 title: Row(
-//                   crossAxisAlignment: CrossAxisAlignment.start,
-//                   children: [
-//                     Container(
-//                       width: 100,
-//                       height: 150,
-//                       child: Image.network(
-//                         'https://image.tmdb.org/t/p/w200${movie.posterPath}',
-//                         fit: BoxFit.cover,
-//                       ),
-//                     ),
-//                     SizedBox(width: 16),
-//                     Expanded(
-//                       child: Column(
-//                         crossAxisAlignment: CrossAxisAlignment.start,
-//                         children: [
-//                           Text(movie.title,
-//                               style: TextStyle(
-//                                   fontSize: 16, fontWeight: FontWeight.bold)),
-//                           Text(
-//                               'Year: ${extractYearFromDate(movie.releaseDate)}'),
-//                           Text('IMDB Rating: ${movie.voteAverage}'),
-//                         ],
-//                       ),
-//                     ),
-//                     IconButton(
-//                       icon: Icon(Icons.favorite),
-//                       color: favoriteMovies.contains(movie)
-//                           ? Colors.red
-//                           : Colors.grey,
-//                       onPressed: () {
-//                         toggleFavorite(movie);
-//                       },
-//                     ),
-//                   ],
-//                 ),
-//                 onTap: () {
-//                   // Add your logic for handling tap on the movie tile
-//                 },
-//               );
-//             },
-//             onLoadMore: _loadMoreTopRatedMovies,
-//           ),
-//         ),
-//       ],
-//     );
-//   }
-
-  // Widget buildTopRatedMoviesPage() {
-  //   return LazyLoadListView(
-  //     items: topRatedMovies,
-  //     itemBuilder: (context, index, movie) {
-  //       return ListTile(
-  //         contentPadding: EdgeInsets.symmetric(vertical: 8, horizontal: 16),
-  //         title: Row(
-  //           crossAxisAlignment: CrossAxisAlignment.start,
-  //           children: [
-  //             Container(
-  //               width: 100,
-  //               height: 150,
-  //               child: Image.network(
-  //                 'https://image.tmdb.org/t/p/w200${movie.posterPath}',
-  //                 fit: BoxFit.cover,
-  //               ),
-  //             ),
-  //             SizedBox(width: 16),
-  //             Expanded(
-  //               child: Column(
-  //                 crossAxisAlignment: CrossAxisAlignment.start,
-  //                 children: [
-  //                   Text(movie.title,
-  //                       style: TextStyle(
-  //                           fontSize: 16, fontWeight: FontWeight.bold)),
-  //                   Text('Year: ${extractYearFromDate(movie.releaseDate)}'),
-  //                   Text('IMDB Rating: ${movie.voteAverage}'),
-  //                 ],
-  //               ),
-  //             ),
-  //             IconButton(
-  //               icon: Icon(Icons.favorite),
-  //               color:
-  //                   favoriteMovies.contains(movie) ? Colors.red : Colors.grey,
-  //               onPressed: () {
-  //                 toggleFavorite(movie);
-  //               },
-  //             ),
-  //           ],
-  //         ),
-  //         onTap: () {
-  //           // Add your logic for handling tap on the movie tile
-  //         },
-  //       );
-  //     },
-  //     onLoadMore: _loadMoreTopRatedMovies,
-  //   );
-  // }
 
 // Helper function to extract year from a date string (YYYY-MM-DD)
   String extractYearFromDate(String dateString) {
@@ -423,14 +252,10 @@ class _HomePageState extends State<HomeScreen> {
     });
   }
 
-  // Method to load favorite movies from SharedPreferences
 // Method to load favorite movies from SharedPreferences
   void loadFavoriteMoviesFromPrefs() async {
     SharedPreferences prefs = await SharedPreferences.getInstance();
     List<String>? favoriteMovieIds = prefs.getStringList('favoriteMovies');
-
-    // Print the favorite movie IDs using debugPrint
-    debugPrint('Favorite Movie IDs: $favoriteMovieIds');
 
     if (favoriteMovieIds != null && favoriteMovieIds.isNotEmpty) {
       try {
@@ -439,7 +264,7 @@ class _HomePageState extends State<HomeScreen> {
                 .firstWhere((movie) => movie.id.toString() == movieId))
             .toList();
       } catch (e) {
-        debugPrint('$e');
+        // debugPrint('$e');
       }
     }
   }
@@ -471,7 +296,7 @@ class _HomePageState extends State<HomeScreen> {
                 width: 100,
                 height: 120,
                 child: Image.network(
-                  'https://image.tmdb.org/t/p/w200${movie.posterPath}',
+                  '${Constants.imgPath}${movie.posterPath}',
                   fit: BoxFit.cover,
                 ),
               ),
@@ -498,75 +323,7 @@ class _HomePageState extends State<HomeScreen> {
               ),
             ],
           ),
-          onTap: () {
-            // Add your logic for handling tap on the movie tile
-          },
         );
-      },
-    );
-  }
-}
-
-class LazyLoadListView<T> extends StatefulWidget {
-  final List<T> items;
-  final Widget Function(BuildContext, int, T) itemBuilder;
-  final VoidCallback onLoadMore;
-
-  LazyLoadListView({
-    required this.items,
-    required this.itemBuilder,
-    required this.onLoadMore,
-  });
-
-  @override
-  _LazyLoadListViewState<T> createState() => _LazyLoadListViewState<T>();
-}
-
-class _LazyLoadListViewState<T> extends State<LazyLoadListView<T>> {
-  final ScrollController _scrollController = ScrollController();
-  bool _isLoading = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _scrollController.addListener(_scrollListener);
-  }
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    super.dispose();
-  }
-
-  void _scrollListener() {
-    if (_scrollController.position.pixels ==
-        _scrollController.position.maxScrollExtent) {
-      if (!_isLoading) {
-        setState(() {
-          _isLoading = true;
-        });
-        widget.onLoadMore();
-      }
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return ListView.builder(
-      controller: _scrollController,
-      itemCount: widget.items.length + (_isLoading ? 1 : 0),
-      itemBuilder: (context, index) {
-        if (index < widget.items.length) {
-          return SizedBox(
-            height: 120, // Adjust the height as needed
-            child: widget.itemBuilder(context, index, widget.items[index]),
-          );
-        } else {
-          return Padding(
-            padding: EdgeInsets.symmetric(vertical: 16),
-            child: Center(child: CircularProgressIndicator()),
-          );
-        }
       },
     );
   }
